@@ -51,34 +51,35 @@ void Core::step() {
     uint8_t rd = (instruction >> 7) & 0x1F;
     uint8_t rs1 = (instruction >> 15) & 0x1F;
     uint8_t rs2 = (instruction >> 20) & 0x1F;
+    int imm;
 
     switch (opcode) {
     case LUI_OPCODE:
-        int imm = decodeImmediateU(instruction);
+        imm = decodeImmediateU(instruction);
         state.registers[rd] = imm;
         state.program_counter += 4;
         break;
 
     case AUIPC_OPCODE:
-        int imm = decodeImmediateU(instruction);
+        imm = decodeImmediateU(instruction);
         state.registers[rd] = imm + state.program_counter;
         state.program_counter += 4;
         break;
 
     case JAL_OPCODE:
-        int imm = decodeImmediateJ(instruction);
+        imm = decodeImmediateJ(instruction);
         state.registers[rd] = state.program_counter + 4;
         state.program_counter += imm;
         break;
 
     case JALR_OPCODE:
-        int imm = decodeImmediateI(instruction);
+        imm = decodeImmediateI(instruction);
         state.registers[rd] = state.program_counter + 4;
         state.program_counter = (state.registers[rs1] + imm) & ~1;
         break;
 
     case BRANCH_OPCODE:
-        int imm = decodeImmediateB(instruction);
+        imm = decodeImmediateB(instruction);
         switch (funct3) {
         case 0x0:
             if (state.registers[rs1] == state.registers[rs2])
@@ -123,27 +124,27 @@ void Core::step() {
         break;
 
     case LOAD_OPCODE:
-        int load_imm = decodeImmediateI(instruction);
+        imm = decodeImmediateI(instruction);
         switch (funct3)
         {
         case 0x0:
-            state.registers[rd] = memory->readByte(state.registers[rs1] + load_imm);
+            state.registers[rd] = memory->readByte(state.registers[rs1] + imm);
             break;
 
         case 0x1:
-            state.registers[rd] = memory->readHalfWord(state.registers[rs1] + load_imm);
+            state.registers[rd] = memory->readHalfWord(state.registers[rs1] + imm);
             break;
 
         case 0x2:
-            state.registers[rd] = memory->readWord(state.registers[rs1] + load_imm);
+            state.registers[rd] = memory->readWord(state.registers[rs1] + imm);
             break;
         
         case 0x4:
-            state.registers[rd] = memory->readByte(state.registers[rs1] + load_imm);
+            state.registers[rd] = memory->readByte(state.registers[rs1] + imm);
             break;
 
         case 0x5:
-            state.registers[rd] = memory->readHalfWord(state.registers[rs1] + load_imm);
+            state.registers[rd] = memory->readHalfWord(state.registers[rs1] + imm);
             break;
 
         default:
@@ -153,19 +154,19 @@ void Core::step() {
         break;
 
     case STORE_OPCODE:
-        int store_imm = decodeImmediateI(instruction);
+        imm = decodeImmediateI(instruction);
         switch (funct3)
         {
         case 0x0:
-            memory->writeByte(state.registers[rs1] + store_imm, state.registers[rs2]);
+            memory->writeByte(state.registers[rs1] + imm, state.registers[rs2]);
             break;
 
         case 0x1:
-            memory->writeHalfWord(state.registers[rs1] + store_imm, state.registers[rs2]);
+            memory->writeHalfWord(state.registers[rs1] + imm, state.registers[rs2]);
             break;
 
         case 0x2:
-            memory->writeWord(state.registers[rs1] + store_imm, state.registers[rs2]);
+            memory->writeWord(state.registers[rs1] + imm, state.registers[rs2]);
             break;
 
         default:
@@ -175,7 +176,7 @@ void Core::step() {
         break;
 
     case OP_IMM_OPCODE:
-        int imm = decodeImmediateI(instruction);
+        imm = decodeImmediateI(instruction);
         switch (funct3) {
         case 0x0:
             state.registers[rd] = state.registers[rs1] + imm;
@@ -262,4 +263,6 @@ void Core::step() {
     default:
         break;
     }
+
+    state.registers[0] = 0;
 }
