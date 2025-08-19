@@ -7,7 +7,7 @@
 struct State
 {
     uint32_t program_counter = 0;
-    std::array<int32_t, 32> registers;
+    std::array<int32_t, 32> registers = { 0 };
 };
 
 
